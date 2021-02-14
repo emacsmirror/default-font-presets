@@ -5,6 +5,9 @@ Default Font Presets
 This is a simple package for switching between a user defined list of fonts,
 with support for scaling the default font too.
 
+Available via `melpa <https://melpa.org/#/default-font-presets>`__.
+
+
 Motivation
 ==========
 
