@@ -246,7 +246,8 @@ Replacement is done so any fine tuning to the default font is kept (attributes f
           :require-match t
           :action
           (lambda (result)
-            (pcase-let ((`(,_text . ,index) result)) (funcall font-set-index-fn index)))
+            (pcase-let ((`(,_text . ,index) result))
+              (funcall font-set-index-fn index)))
           :caller #'default-font-presets-choose))
       ;; Fallback to completing read.
       (t
