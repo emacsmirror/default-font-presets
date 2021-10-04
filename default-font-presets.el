@@ -66,9 +66,11 @@
 (defun default-font-presets--split (font-name)
   "Simply split FONT-NAME that might be used for XFT properties `A:B` to (`A` `:B`)."
   (let ((sep (string-match-p ":" font-name)))
-    (if sep
-      (cons (substring font-name 0 sep) (substring font-name sep))
-      (cons font-name ""))))
+    (cond
+      (sep
+        (cons (substring font-name 0 sep) (substring font-name sep)))
+      (t
+        (cons font-name "")))))
 
 (defun default-font-presets--scale-by-delta (font-name scale-delta)
   "Scale font FONT-NAME by adding SCALE-DELTA."
@@ -92,9 +94,11 @@
                 (when size-test
                   (when (floatp size-test)
                     (setq size-test
-                      (if (< 0 scale-delta)
-                        (ceiling size-test)
-                        (floor size-test))))
+                      (cond
+                        ((< 0 scale-delta)
+                          (ceiling size-test))
+                        (t
+                          (floor size-test)))))
                   (number-to-string (max 1 (+ scale-delta size-test)))))))
           (when size-new
 
@@ -148,12 +152,14 @@ Replacement is done so any fine tuning to the default font is kept (attributes f
         (let ((current-font-no-attrs (car (default-font-presets--split current-font))))
           (setq font-index-test
             (default-font-presets--index-ensure current-font current-font-no-attrs)))))
-    (if font-index-test
-      (setq default-font-presets--index font-index-test)
-      ;; Fall-back to first font (unlikely we can't find our own font).
-      (unless default-font-presets--index
-        (setq default-font-presets--index 0))
-      (default-font-presets--index-update))))
+    (cond
+      (font-index-test
+        (setq default-font-presets--index font-index-test))
+      (t
+        ;; Fall-back to first font (unlikely we can't find our own font).
+        (unless default-font-presets--index
+          (setq default-font-presets--index 0))
+        (default-font-presets--index-update)))))
 
 (defun default-font-presets--ensure-once ()
   "Ensure we initialize the font list."
@@ -240,9 +246,11 @@ Replacement is done so any fine tuning to the default font is kept (attributes f
         (ivy-read
           prompt content
           :preselect
-          (if (= default-index -1)
-            nil
-            default-index)
+          (cond
+            ((= default-index -1)
+              nil)
+            (t
+              default-index))
           :require-match t
           :action
           (lambda (result)
