@@ -41,14 +41,16 @@
 ;; ---------------------------------------------------------------------------
 ;; Custom Variables
 
+(defgroup default-font-presets nil
+  "Convenience functions for scaling and cycling the default font."
+  :group 'faces)
+
 (defcustom default-font-presets-list nil
   "List font presets you wish to use."
-  :group 'default-font-presets
   :type '(repeat string))
 
 (defcustom default-font-presets-reset-scale-on-switch t
   "Reset the font scale when setting a new preset."
-  :group 'default-font-presets
   :type 'boolean)
 
 
