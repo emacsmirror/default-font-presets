@@ -66,7 +66,8 @@
 ;; Internal Functions/Macros
 
 (defun default-font-presets--split (font-name)
-  "Simply split FONT-NAME that might be used for XFT properties `A:B` to (`A` `:B`)."
+  "Simply split FONT-NAME that might be used for XFT properties.
+For example: `A:B` is converted to (`A` `:B`)."
   (let ((sep (string-match-p ":" font-name)))
     (cond
       (sep
@@ -145,7 +146,8 @@ Argument FONT-NAME-NO-ATTRS is simply to avoid re-calculating the value."
 This adds to `default-font-presets-list' or replacing one of it's values
 when the default font is already in the list.
 
-Replacement is done so any fine tuning to the default font is kept (attributes for e.g)."
+Replacement is done so any fine tuning to the default font is kept,
+so attributes are kept (for example)."
   (unless default-font-presets-list
     (user-error "The variable 'default-font-presets-list' is not a list of fonts!"))
   (let ((font-index-test nil))
@@ -174,7 +176,10 @@ Replacement is done so any fine tuning to the default font is kept (attributes f
 
 ;;;###autoload
 (defun default-font-presets-step (arg)
-  "Cycle the font in `default-font-presets-list' forward or backward ARG times (default to 1)."
+  "Cycle the font in `default-font-presets-list'.
+
+ARG is added to the current index, a negative number cycles backwards.
+When nil, 1 is used."
   (interactive "p")
   (unless (display-graphic-p)
     (user-error "Cannot cycle fonts on non-graphical frame window!"))
