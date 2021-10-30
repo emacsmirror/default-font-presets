@@ -53,6 +53,10 @@
   "Reset the font scale when setting a new preset."
   :type 'boolean)
 
+(defcustom default-font-presets-scale-fit-margin 1
+  "Offset for fill-column indicator when fitting."
+  :type 'integer)
+
 
 ;; ---------------------------------------------------------------------------
 ;; Internal Variables
@@ -309,6 +313,38 @@ When nil, 1 is used."
   (let ((current-font (default-font-presets--index-update)))
     (message current-font)))
 
+;;;###autoload
+(defun default-font-presets-scale-fit ()
+  "Fit the `fill-column' to the window width."
+  (interactive)
+  (default-font-presets--ensure-once)
+  (let
+    ( ;; Don't redraw while resizing.
+      (inhibit-redisplay t)
+      (target-width (+ fill-column default-font-presets-scale-fit-margin))
+      (win-width (window-width))
+      ;; Only needed for scaling up.
+      (scale-delta-prev default-font-presets--scale-delta)
+      ;; Compare with the previous final font
+      ;; (prevent any clamping from causing an infinite loop).
+      (font-prev nil)
+      (font-curr t))
+    (cond
+      ((> target-width win-width)
+        (while (and (>= target-width win-width) (not (eq font-curr font-prev)))
+          (setq default-font-presets--scale-delta (1- default-font-presets--scale-delta))
+          (setq font-prev font-curr)
+          (setq font-curr (default-font-presets--index-update))
+          (setq win-width (window-width))))
+      ((< target-width win-width)
+        (while (and (< target-width win-width) (not (eq font-curr font-prev)))
+          (setq scale-delta-prev default-font-presets--scale-delta)
+          (setq default-font-presets--scale-delta (1+ default-font-presets--scale-delta))
+          (setq font-prev font-curr)
+          (setq font-curr (default-font-presets--index-update))
+          (setq win-width (window-width)))
+        (setq default-font-presets--scale-delta scale-delta-prev)
+        (default-font-presets--index-update)))))
 
 (provide 'default-font-presets)
 ;;; default-font-presets.el ends here

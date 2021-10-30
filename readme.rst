@@ -38,8 +38,10 @@ Instead, simply map keys to actions you wish to use.
    Decrease the current font size by one point.
 ``default-font-presets-scale-reset``
    Reset the current font size.
+``default-font-presets-scale-fit``
+   Fit the fill-column to the window width.
 
-Example configuration, using use-package (with ``straight``):
+Example configuration, using use-package:
 
 .. code-block:: elisp
 
@@ -86,6 +88,8 @@ Customization
    Font presets to use.
 ``default-font-presets-reset-scale-on-switch`` (``t``)
    When not ``nil`` switching fonts resets any scaling.
+``default-font-presets-scale-fit-margin`` (``1``)
+   The number of additional columns to show when calling ``default-font-presets-scale-fit``.
 
 
 Details
