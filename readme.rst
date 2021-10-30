@@ -91,8 +91,7 @@ Customization
 Details
 =======
 
-
-- Changes are applied to all windows globally.
+- Changes are applied to all windows globally as well as newly created windows.
 - The current font is always added to the list, if it's not already present.
 - If the font can't be found it will be skipped when cycling forward/backwards
   *(with a note that fonts were skipped)*.

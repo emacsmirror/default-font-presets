@@ -117,13 +117,25 @@ For example: `A:B` is converted to (`A` `:B`)."
       (setq current-font
         (default-font-presets--scale-by-delta current-font default-font-presets--scale-delta)))
 
-    (condition-case _err
-      (progn
-        (set-face-attribute 'default nil :font current-font)
+    (cond
+      (
+        (condition-case _err
+          (progn
+            (set-face-attribute 'default nil :font current-font)
+            t)
+          (error nil))
+
+        ;; Update the default font for new windows.
+        (let ((cell (assoc 'font default-frame-alist 'eq)))
+          (when cell
+            (setcdr cell current-font)))
 
         ;; Return the font used, in-case we want to print it.
         current-font)
-      (error nil))))
+
+      (t
+        ;; Failure, the font failed to load.
+        nil))))
 
 (defun default-font-presets--index-ensure (font-name font-name-no-attrs)
   "Add FONT-NAME list or return index if it's not already there.
