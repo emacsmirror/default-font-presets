@@ -164,8 +164,6 @@ when the default font is already in the list.
 
 Replacement is done so any fine tuning to the default font is kept,
 so attributes are kept (for example)."
-  (unless default-font-presets-list
-    (user-error "The variable 'default-font-presets-list' is not a list of fonts!"))
   (let ((font-index-test nil))
     (let ((current-font (font-get (face-attribute 'default :font) :name)))
       (unless (string-equal current-font "")
