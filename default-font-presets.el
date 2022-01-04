@@ -97,7 +97,12 @@ For example: `A:B` is converted to (`A` `:B`)."
                   (size-test
                     (condition-case err
                       (string-to-number size-old)
-                      (error (message "Unable to convert %S to a number: %s" size-old err) nil))))
+                      (error
+                        (message
+                          "Unable to convert %S to a number: %s"
+                          size-old
+                          (error-message-string err))
+                        nil))))
                 (when size-test
                   (when (floatp size-test)
                     (setq size-test
