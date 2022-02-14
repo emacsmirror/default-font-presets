@@ -313,7 +313,7 @@ When nil, 1 is used."
     ( ;; Don't redraw while resizing.
       (inhibit-redisplay t)
       (target-width (+ fill-column default-font-presets-scale-fit-margin))
-      (win-width (window-body-width))
+      (win-width (window-max-chars-per-line))
       ;; Only needed for scaling up.
       (scale-delta-prev default-font-presets--scale-delta)
       ;; Compare with the previous final font
@@ -326,14 +326,14 @@ When nil, 1 is used."
           (setq default-font-presets--scale-delta (1- default-font-presets--scale-delta))
           (setq font-prev font-curr)
           (setq font-curr (default-font-presets--index-update))
-          (setq win-width (window-body-width))))
+          (setq win-width (window-max-chars-per-line))))
       ((< target-width win-width)
         (while (and (< target-width win-width) (not (eq font-curr font-prev)))
           (setq scale-delta-prev default-font-presets--scale-delta)
           (setq default-font-presets--scale-delta (1+ default-font-presets--scale-delta))
           (setq font-prev font-curr)
           (setq font-curr (default-font-presets--index-update))
-          (setq win-width (window-body-width)))
+          (setq win-width (window-max-chars-per-line)))
         (setq default-font-presets--scale-delta scale-delta-prev)
         (default-font-presets--index-update)))))
 
