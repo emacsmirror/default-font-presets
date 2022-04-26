@@ -54,6 +54,19 @@
 (defvar default-font-presets--index nil)
 (defvar default-font-presets--scale-delta 0)
 
+;; List of interactive commands.
+(defconst default-font-presets--commands
+  (list
+    'default-font-presets-step
+    'default-font-presets-forward
+    'default-font-presets-backward
+    'default-font-presets-choose
+    'default-font-presets-scale-increase
+    'default-font-presets-scale-decrease
+    'default-font-presets-scale-reset
+    'default-font-presets-scale-fit))
+
+
 ;; ---------------------------------------------------------------------------
 ;; Internal Functions/Macros
 
@@ -336,6 +349,16 @@ When nil, 1 is used."
           (setq win-width (window-max-chars-per-line)))
         (setq default-font-presets--scale-delta scale-delta-prev)
         (default-font-presets--index-update)))))
+
+;; Evil Move (setup if in use).
+;;
+;; Don't let these commands repeat as they are for the UI, not editor.
+;;
+;; Notes:
+;; - Package lint complains about using this command,
+;;   however it's needed to avoid issues with `evil-mode'.
+(declare-function evil-declare-not-repeat "ext:evil-common")
+(with-eval-after-load 'evil (mapc #'evil-declare-not-repeat default-font-presets--commands))
 
 (provide 'default-font-presets)
 ;;; default-font-presets.el ends here
