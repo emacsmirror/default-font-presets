@@ -70,6 +70,11 @@
 ;; ---------------------------------------------------------------------------
 ;; Internal Functions/Macros
 
+(defun default-font-presets--message (&rest args)
+  "Format a message with ARGS (without logging)."
+  (let ((message-log-max nil))
+    (apply 'message (cons (concat "default-font: " (car args)) (cdr args)))))
+
 (defun default-font-presets--split (font-name)
   "Simply split FONT-NAME that might be used for XFT properties.
 For example: `A:B` is converted to (`A` `:B`)."
@@ -225,11 +230,13 @@ When nil, 1 is used."
 
     (cond
       ((null current-font)
-        (message "warning: none of the %d font presets could be found!" list-len))
+        (default-font-presets--message
+          "warning, none of the %d font presets could be found!"
+          list-len))
       ((not (zerop skip-len))
-        (message "%s, skipped %d" current-font skip-len))
+        (default-font-presets--message "%s, skipped %d" current-font skip-len))
       (t
-        (message "%s" current-font)))))
+        (default-font-presets--message "%s" current-font)))))
 
 ;;;###autoload
 (defun default-font-presets-forward ()
@@ -297,7 +304,7 @@ When nil, 1 is used."
   (default-font-presets--ensure-once)
   (setq default-font-presets--scale-delta (1+ default-font-presets--scale-delta))
   (let ((current-font (default-font-presets--index-update)))
-    (message current-font)))
+    (default-font-presets--message current-font)))
 
 ;;;###autoload
 (defun default-font-presets-scale-decrease ()
@@ -306,7 +313,7 @@ When nil, 1 is used."
   (default-font-presets--ensure-once)
   (setq default-font-presets--scale-delta (1- default-font-presets--scale-delta))
   (let ((current-font (default-font-presets--index-update)))
-    (message current-font)))
+    (default-font-presets--message current-font)))
 
 ;;;###autoload
 (defun default-font-presets-scale-reset ()
@@ -315,7 +322,7 @@ When nil, 1 is used."
   (default-font-presets--ensure-once)
   (setq default-font-presets--scale-delta 0)
   (let ((current-font (default-font-presets--index-update)))
-    (message current-font)))
+    (default-font-presets--message current-font)))
 
 ;;;###autoload
 (defun default-font-presets-scale-fit ()
