@@ -73,7 +73,7 @@
 (defun default-font-presets--message (&rest args)
   "Format a message with ARGS (without logging)."
   (let ((message-log-max nil))
-    (apply 'message (cons (concat "default-font: " (car args)) (cdr args)))))
+    (apply #'message (cons (concat "default-font: " (car args)) (cdr args)))))
 
 (defun default-font-presets--split (font-name)
   "Simply split FONT-NAME that might be used for XFT properties.
