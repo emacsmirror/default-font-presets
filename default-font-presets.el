@@ -104,8 +104,7 @@ For example: `A:B` is converted to (`A` `:B`)."
                     (condition-case err
                       (string-to-number size-old)
                       (error
-                        (message
-                          "Unable to convert %S to a number: %s"
+                        (message "Unable to convert %S to a number: %s"
                           size-old
                           (error-message-string err))
                         nil))))
@@ -365,7 +364,8 @@ When nil, 1 is used."
 ;; - Package lint complains about using this command,
 ;;   however it's needed to avoid issues with `evil-mode'.
 (declare-function evil-declare-not-repeat "ext:evil-common")
-(with-eval-after-load 'evil (mapc #'evil-declare-not-repeat default-font-presets--commands))
+(with-eval-after-load 'evil
+  (mapc #'evil-declare-not-repeat default-font-presets--commands))
 
 (provide 'default-font-presets)
 ;;; default-font-presets.el ends here
