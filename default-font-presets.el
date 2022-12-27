@@ -57,14 +57,14 @@
 ;; List of interactive commands.
 (defconst default-font-presets--commands
   (list
-    'default-font-presets-step
-    'default-font-presets-forward
-    'default-font-presets-backward
-    'default-font-presets-choose
-    'default-font-presets-scale-increase
-    'default-font-presets-scale-decrease
-    'default-font-presets-scale-reset
-    'default-font-presets-scale-fit))
+   'default-font-presets-step
+   'default-font-presets-forward
+   'default-font-presets-backward
+   'default-font-presets-choose
+   'default-font-presets-scale-increase
+   'default-font-presets-scale-decrease
+   'default-font-presets-scale-reset
+   'default-font-presets-scale-fit))
 
 
 ;; ---------------------------------------------------------------------------
@@ -80,10 +80,10 @@
 For example: `A:B` is converted to (`A` `:B`)."
   (let ((sep (string-match-p ":" font-name)))
     (cond
-      (sep
-        (cons (substring font-name 0 sep) (substring font-name sep)))
-      (t
-        (cons font-name "")))))
+     (sep
+      (cons (substring font-name 0 sep) (substring font-name sep)))
+     (t
+      (cons font-name "")))))
 
 (defun default-font-presets--scale-by-delta (font-name scale-delta)
   "Scale font FONT-NAME by adding SCALE-DELTA."
@@ -91,32 +91,28 @@ For example: `A:B` is converted to (`A` `:B`)."
     (let ((beg (string-match-p "\\([[:blank:]]\\|-\\)[0-9]+[0-9.]*\\'" head)))
       (when beg
         (setq beg (1+ beg))
-        (let*
-          (
-            (size-old (substring head beg))
+        (let* ((size-old (substring head beg))
 
-            ;; Error checked, while it's unlikely this will fail.
-            ;; Any errors here will seem like a bug, so show a message instead.
-            (size-new
-              (let
-                (
-                  (size-test
-                    (condition-case err
-                      (string-to-number size-old)
-                      (error
-                        (message "Unable to convert %S to a number: %s"
-                          size-old
-                          (error-message-string err))
-                        nil))))
-                (when size-test
-                  (when (floatp size-test)
-                    (setq size-test
-                      (cond
-                        ((< 0 scale-delta)
-                          (ceiling size-test))
-                        (t
-                          (floor size-test)))))
-                  (number-to-string (max 1 (+ scale-delta size-test)))))))
+               ;; Error checked, while it's unlikely this will fail.
+               ;; Any errors here will seem like a bug, so show a message instead.
+               (size-new
+                (let ((size-test
+                       (condition-case err
+                           (string-to-number size-old)
+                         (error
+                          (message "Unable to convert %S to a number: %s"
+                                   size-old
+                                   (error-message-string err))
+                          nil))))
+                  (when size-test
+                    (when (floatp size-test)
+                      (setq size-test
+                            (cond
+                             ((< 0 scale-delta)
+                              (ceiling size-test))
+                             (t
+                              (floor size-test)))))
+                    (number-to-string (max 1 (+ scale-delta size-test)))))))
           (when size-new
 
             (setq font-name (concat (substring head 0 beg) size-new tail)))))))
@@ -129,27 +125,26 @@ For example: `A:B` is converted to (`A` `:B`)."
     ;; Scale the font if needed.
     (unless (zerop default-font-presets--scale-delta)
       (setq current-font
-        (default-font-presets--scale-by-delta current-font default-font-presets--scale-delta)))
+            (default-font-presets--scale-by-delta current-font default-font-presets--scale-delta)))
 
     (cond
-      (
-        (condition-case _err
+     ((condition-case _err
           (progn
             (set-face-attribute 'default nil :font current-font)
             t)
-          (error nil))
+        (error nil))
 
-        ;; Update the default font for new windows.
-        (let ((cell (assoc 'font default-frame-alist 'eq)))
-          (when cell
-            (setcdr cell current-font)))
+      ;; Update the default font for new windows.
+      (let ((cell (assoc 'font default-frame-alist 'eq)))
+        (when cell
+          (setcdr cell current-font)))
 
-        ;; Return the font used, in-case we want to print it.
-        current-font)
+      ;; Return the font used, in-case we want to print it.
+      current-font)
 
-      (t
-        ;; Failure, the font failed to load.
-        nil))))
+     (t
+      ;; Failure, the font failed to load.
+      nil))))
 
 (defun default-font-presets--index-ensure (font-name font-name-no-attrs)
   "Add FONT-NAME list or return index if it's not already there.
@@ -179,15 +174,15 @@ so attributes are kept (for example)."
       (unless (string-equal current-font "")
         (let ((current-font-no-attrs (car (default-font-presets--split current-font))))
           (setq font-index-test
-            (default-font-presets--index-ensure current-font current-font-no-attrs)))))
+                (default-font-presets--index-ensure current-font current-font-no-attrs)))))
     (cond
-      (font-index-test
-        (setq default-font-presets--index font-index-test))
-      (t
-        ;; Fall-back to first font (unlikely we can't find our own font).
-        (unless default-font-presets--index
-          (setq default-font-presets--index 0))
-        (default-font-presets--index-update)))))
+     (font-index-test
+      (setq default-font-presets--index font-index-test))
+     (t
+      ;; Fall-back to first font (unlikely we can't find our own font).
+      (unless default-font-presets--index
+        (setq default-font-presets--index 0))
+      (default-font-presets--index-update)))))
 
 (defun default-font-presets--ensure-once ()
   "Ensure we initialize the font list."
@@ -216,11 +211,9 @@ When nil, 1 is used."
 
   ;; Set the next/previous font index.
   ;; Note that this is done in a loop so we can skip fonts that aren't found.
-  (let
-    (
-      (list-len (length default-font-presets-list))
-      (skip-len 0)
-      (current-font nil))
+  (let ((list-len (length default-font-presets-list))
+        (skip-len 0)
+        (current-font nil))
     ;; Use a while loop in case there are fonts missing.
     (while (and (null current-font) (< skip-len list-len))
       (setq default-font-presets--index (mod (+ default-font-presets--index arg) list-len))
@@ -228,14 +221,14 @@ When nil, 1 is used."
         (setq skip-len (1+ skip-len))))
 
     (cond
-      ((null current-font)
-        (default-font-presets--message
-          "warning, none of the %d font presets could be found!"
-          list-len))
-      ((not (zerop skip-len))
-        (default-font-presets--message "%s, skipped %d" current-font skip-len))
-      (t
-        (default-font-presets--message "%s" current-font)))))
+     ((null current-font)
+      (default-font-presets--message
+       "warning, none of the %d font presets could be found!"
+       list-len))
+     ((not (zerop skip-len))
+      (default-font-presets--message "%s, skipped %d" current-font skip-len))
+     (t
+      (default-font-presets--message "%s" current-font)))))
 
 ;;;###autoload
 (defun default-font-presets-forward ()
@@ -255,17 +248,15 @@ When nil, 1 is used."
   (interactive)
 
   (default-font-presets--ensure-once)
-  (let
-    (
-      (prompt "Select font: ")
-      (default-index default-font-presets--index)
-      (content (list))
-      (font-set-index-fn
-        (lambda (index)
-          (setq default-font-presets--index index)
-          (condition-case _err
-            (default-font-presets--index-update)
-            (error nil)))))
+  (let ((prompt "Select font: ")
+        (default-index default-font-presets--index)
+        (content (list))
+        (font-set-index-fn
+         (lambda (index)
+           (setq default-font-presets--index index)
+           (condition-case _err
+               (default-font-presets--index-update)
+             (error nil)))))
 
     (let ((index 0))
       (dolist (font-name default-font-presets-list)
@@ -274,27 +265,27 @@ When nil, 1 is used."
       (setq content (nreverse content)))
 
     (cond
-      ;; Ivy (optional).
-      ((fboundp 'ivy-read)
-        (ivy-read
-          prompt content
-          :preselect
-          (cond
-            ((= default-index -1)
-              nil)
-            (t
-              default-index))
-          :require-match t
-          :action
-          (lambda (result)
-            (pcase-let ((`(,_text . ,index) result))
-              (funcall font-set-index-fn index)))
-          :caller #'default-font-presets-choose))
-      ;; Fallback to completing read.
-      (t
-        (let ((choice (completing-read prompt content nil t nil nil (nth default-index content))))
-          (pcase-let ((`(,_text . ,index) (assoc choice content)))
-            (funcall font-set-index-fn index)))))))
+     ;; Ivy (optional).
+     ((fboundp 'ivy-read)
+      (ivy-read
+       prompt content
+       :preselect
+       (cond
+        ((= default-index -1)
+         nil)
+        (t
+         default-index))
+       :require-match t
+       :action
+       (lambda (result)
+         (pcase-let ((`(,_text . ,index) result))
+           (funcall font-set-index-fn index)))
+       :caller #'default-font-presets-choose))
+     ;; Fallback to completing read.
+     (t
+      (let ((choice (completing-read prompt content nil t nil nil (nth default-index content))))
+        (pcase-let ((`(,_text . ,index) (assoc choice content)))
+          (funcall font-set-index-fn index)))))))
 
 ;;;###autoload
 (defun default-font-presets-scale-increase ()
@@ -329,32 +320,32 @@ When nil, 1 is used."
   (interactive)
   (default-font-presets--ensure-once)
   (let
-    ( ;; Don't redraw while resizing.
-      (inhibit-redisplay t)
-      (target-width (+ fill-column default-font-presets-scale-fit-margin))
-      (win-width (window-max-chars-per-line))
-      ;; Only needed for scaling up.
-      (scale-delta-prev default-font-presets--scale-delta)
-      ;; Compare with the previous final font
-      ;; (prevent any clamping from causing an infinite loop).
-      (font-prev nil)
-      (font-curr t))
+      ( ;; Don't redraw while resizing.
+       (inhibit-redisplay t)
+       (target-width (+ fill-column default-font-presets-scale-fit-margin))
+       (win-width (window-max-chars-per-line))
+       ;; Only needed for scaling up.
+       (scale-delta-prev default-font-presets--scale-delta)
+       ;; Compare with the previous final font
+       ;; (prevent any clamping from causing an infinite loop).
+       (font-prev nil)
+       (font-curr t))
     (cond
-      ((> target-width win-width)
-        (while (and (>= target-width win-width) (not (eq font-curr font-prev)))
-          (setq default-font-presets--scale-delta (1- default-font-presets--scale-delta))
-          (setq font-prev font-curr)
-          (setq font-curr (default-font-presets--index-update))
-          (setq win-width (window-max-chars-per-line))))
-      ((< target-width win-width)
-        (while (and (< target-width win-width) (not (eq font-curr font-prev)))
-          (setq scale-delta-prev default-font-presets--scale-delta)
-          (setq default-font-presets--scale-delta (1+ default-font-presets--scale-delta))
-          (setq font-prev font-curr)
-          (setq font-curr (default-font-presets--index-update))
-          (setq win-width (window-max-chars-per-line)))
-        (setq default-font-presets--scale-delta scale-delta-prev)
-        (default-font-presets--index-update)))))
+     ((> target-width win-width)
+      (while (and (>= target-width win-width) (not (eq font-curr font-prev)))
+        (setq default-font-presets--scale-delta (1- default-font-presets--scale-delta))
+        (setq font-prev font-curr)
+        (setq font-curr (default-font-presets--index-update))
+        (setq win-width (window-max-chars-per-line))))
+     ((< target-width win-width)
+      (while (and (< target-width win-width) (not (eq font-curr font-prev)))
+        (setq scale-delta-prev default-font-presets--scale-delta)
+        (setq default-font-presets--scale-delta (1+ default-font-presets--scale-delta))
+        (setq font-prev font-curr)
+        (setq font-curr (default-font-presets--index-update))
+        (setq win-width (window-max-chars-per-line)))
+      (setq default-font-presets--scale-delta scale-delta-prev)
+      (default-font-presets--index-update)))))
 
 ;; Evil Move (setup if in use).
 ;;
