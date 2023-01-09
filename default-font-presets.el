@@ -358,4 +358,8 @@ When nil, 1 is used."
   (mapc #'evil-declare-not-repeat default-font-presets--commands))
 
 (provide 'default-font-presets)
+;; Local Variables:
+;; fill-column: 99
+;; indent-tabs-mode: nil
+;; End:
 ;;; default-font-presets.el ends here
