@@ -319,17 +319,16 @@ When nil, 1 is used."
   "Fit the `fill-column' to the window width."
   (interactive)
   (default-font-presets--ensure-once)
-  (let
-      ( ;; Don't redraw while resizing.
-       (inhibit-redisplay t)
-       (target-width (+ fill-column default-font-presets-scale-fit-margin))
-       (win-width (window-max-chars-per-line))
-       ;; Only needed for scaling up.
-       (scale-delta-prev default-font-presets--scale-delta)
-       ;; Compare with the previous final font
-       ;; (prevent any clamping from causing an infinite loop).
-       (font-prev nil)
-       (font-curr t))
+  (let ((target-width (+ fill-column default-font-presets-scale-fit-margin))
+        (win-width (window-max-chars-per-line))
+        ;; Only needed for scaling up.
+        (scale-delta-prev default-font-presets--scale-delta)
+        ;; Compare with the previous final font
+        ;; (prevent any clamping from causing an infinite loop).
+        (font-prev nil)
+        (font-curr t)
+        ;; Don't redraw while resizing.
+        (inhibit-redisplay t))
     (cond
      ((> target-width win-width)
       (while (and (>= target-width win-width) (not (eq font-curr font-prev)))
