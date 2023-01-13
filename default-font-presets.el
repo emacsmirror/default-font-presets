@@ -346,7 +346,7 @@ When nil, 1 is used."
       (setq default-font-presets--scale-delta scale-delta-prev)
       (default-font-presets--index-update)))))
 
-;; Evil Move (setup if in use).
+;; Evil Mode (setup if in use).
 ;;
 ;; Don't let these commands repeat as they are for the UI, not editor.
 ;;
