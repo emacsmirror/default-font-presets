@@ -223,8 +223,7 @@ When nil, 1 is used."
     (cond
      ((null current-font)
       (default-font-presets--message
-       "warning, none of the %d font presets could be found!"
-       list-len))
+       "warning, none of the %d font presets could be found!" list-len))
      ((not (zerop skip-len))
       (default-font-presets--message "%s, skipped %d" current-font skip-len))
      (t
