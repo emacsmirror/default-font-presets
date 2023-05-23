@@ -36,10 +36,10 @@ Instead, simply map keys to actions you wish to use.
    Increase the current font size by one point.
 ``default-font-presets-scale-decrease``
    Decrease the current font size by one point.
-``default-font-presets-scale-reset``
-   Reset the current font size.
 ``default-font-presets-scale-fit``
    Fit the fill-column to the window width.
+``default-font-presets-scale-reset``
+   Reset the current font size.
 
 Example configuration, using use-package:
 
@@ -53,6 +53,7 @@ Example configuration, using use-package:
       default-font-presets-choose
       default-font-presets-scale-increase
       default-font-presets-scale-decrease
+      default-font-presets-scale-fit
       default-font-presets-scale-reset)
 
      :config
