@@ -70,6 +70,14 @@
 ;; ---------------------------------------------------------------------------
 ;; Internal Functions/Macros
 
+(defsubst default-font-presets--current-font-get ()
+  "Return the current default font."
+  (font-get (face-attribute 'default :font) :name))
+
+(defsubst default-font-presets--current-font-set (current-font)
+  "Set the CURRENT-FONT font."
+  (set-face-attribute 'default nil :font current-font))
+
 (defun default-font-presets--message (&rest args)
   "Format a message with ARGS (without logging)."
   (let ((message-log-max nil))
@@ -130,7 +138,7 @@ For example: `A:B` is converted to (`A` `:B`)."
     (cond
      ((condition-case _err
           (progn
-            (set-face-attribute 'default nil :font current-font)
+            (default-font-presets--current-font-set current-font)
             t)
         (error nil))
 
@@ -170,7 +178,7 @@ when the default font is already in the list.
 Replacement is done so any fine tuning to the default font is kept,
 so attributes are kept (for example)."
   (let ((font-index-test nil))
-    (let ((current-font (font-get (face-attribute 'default :font) :name)))
+    (let ((current-font (default-font-presets--current-font-get)))
       (unless (string-equal current-font "")
         (let ((current-font-no-attrs (car (default-font-presets--split current-font))))
           (setq font-index-test
