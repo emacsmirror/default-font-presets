@@ -37,6 +37,12 @@
   "List font presets you wish to use."
   :type '(repeat string))
 
+(defcustom default-font-presets-shared-state nil
+  "Presets share state (currently only scale).
+
+Otherwise each preset remembers the last scale set."
+  :type 'boolean)
+
 (defcustom default-font-presets-reset-scale-on-switch t
   "Reset the font scale when setting a new preset."
   :type 'boolean)
@@ -53,6 +59,8 @@
 ;; initialized on first use.
 (defvar default-font-presets--index nil)
 (defvar default-font-presets--scale-delta 0)
+;; A hash: string -> delta (when non-nil).
+(defvar default-font-presets--scale-per-preset nil)
 
 ;; List of interactive commands.
 (defconst default-font-presets--commands
@@ -77,6 +85,31 @@
 (defsubst default-font-presets--current-font-set (current-font)
   "Set the CURRENT-FONT font."
   (set-face-attribute 'default nil :font current-font))
+
+(defun default-font-presets--per-preset-state-store ()
+  "Store the state of the current preset."
+  (when default-font-presets--index
+    (let ((current-font (nth default-font-presets--index default-font-presets-list)))
+      (cond
+       ((zerop default-font-presets--scale-delta)
+        (when default-font-presets--scale-per-preset
+          (remhash current-font default-font-presets--scale-per-preset)))
+       (t
+        (unless default-font-presets--scale-per-preset
+          (setq default-font-presets--scale-per-preset
+                (make-hash-table :test #'equal :weakness 'key)))
+
+        (puthash
+         current-font
+         default-font-presets--scale-delta
+         default-font-presets--scale-per-preset))))))
+
+(defun default-font-presets--per-preset-state-restore (current-font)
+  "Restore the scale for CURRENT-FONT."
+  (when default-font-presets--scale-per-preset
+    (let ((scale-delta (gethash current-font default-font-presets--scale-per-preset)))
+      (when scale-delta
+        (setq default-font-presets--scale-delta scale-delta)))))
 
 (defun default-font-presets--message (&rest args)
   "Format a message with ARGS (without logging)."
@@ -126,33 +159,43 @@ For example: `A:B` is converted to (`A` `:B`)."
             (setq font-name (concat (substring head 0 beg) size-new tail)))))))
   font-name)
 
+(defun default-font-presets--font-update (current-font)
+  "Update the font to CURRENT-FONT."
+  ;; Scale the font if needed.
+  (unless (zerop default-font-presets--scale-delta)
+    (setq current-font
+          (default-font-presets--scale-by-delta current-font default-font-presets--scale-delta)))
+
+  (cond
+   ((condition-case _err
+        (progn
+          (default-font-presets--current-font-set current-font)
+          t)
+      (error nil))
+
+    ;; Update the default font for new windows.
+    (let ((cell (assoc 'font default-frame-alist 'eq)))
+      (when cell
+        (setcdr cell current-font)))
+
+    ;; Return the font used, in-case we want to print it.
+    current-font)
+
+   (t
+    ;; Failure, the font failed to load.
+    nil)))
+
 (defun default-font-presets--index-update ()
   "Set the current font based on the current index and scale delta."
   (let ((current-font (nth default-font-presets--index default-font-presets-list)))
+    (default-font-presets--font-update current-font)))
 
-    ;; Scale the font if needed.
-    (unless (zerop default-font-presets--scale-delta)
-      (setq current-font
-            (default-font-presets--scale-by-delta current-font default-font-presets--scale-delta)))
-
-    (cond
-     ((condition-case _err
-          (progn
-            (default-font-presets--current-font-set current-font)
-            t)
-        (error nil))
-
-      ;; Update the default font for new windows.
-      (let ((cell (assoc 'font default-frame-alist 'eq)))
-        (when cell
-          (setcdr cell current-font)))
-
-      ;; Return the font used, in-case we want to print it.
-      current-font)
-
-     (t
-      ;; Failure, the font failed to load.
-      nil))))
+(defun default-font-presets--index-update-on-switch ()
+  "Set the current font based on the current index and scale delta."
+  (let ((current-font (nth default-font-presets--index default-font-presets-list)))
+    (unless default-font-presets-shared-state
+      (default-font-presets--per-preset-state-restore current-font))
+    (default-font-presets--font-update current-font)))
 
 (defun default-font-presets--index-ensure (font-name font-name-no-attrs)
   "Add FONT-NAME list or return index if it's not already there.
@@ -197,6 +240,13 @@ so attributes are kept (for example)."
   (unless default-font-presets--index
     (default-font-presets--init)))
 
+(defun default-font-presets--switch-pre ()
+  "Run before switching away from the current font."
+  (unless default-font-presets-shared-state
+    (default-font-presets--per-preset-state-store))
+  (when default-font-presets-reset-scale-on-switch
+    (setq default-font-presets--scale-delta 0)))
+
 
 ;; ---------------------------------------------------------------------------
 ;; Public Functions
@@ -211,10 +261,9 @@ When nil, 1 is used."
   (unless (display-graphic-p)
     (user-error "Cannot cycle fonts on non-graphical frame window!"))
 
-  (when default-font-presets-reset-scale-on-switch
-    (setq default-font-presets--scale-delta 0))
-
   (default-font-presets--ensure-once)
+  (default-font-presets--switch-pre)
+
   (setq arg (or arg 1))
 
   ;; Set the next/previous font index.
@@ -225,7 +274,7 @@ When nil, 1 is used."
     ;; Use a while loop in case there are fonts missing.
     (while (and (null current-font) (< skip-len list-len))
       (setq default-font-presets--index (mod (+ default-font-presets--index arg) list-len))
-      (unless (setq current-font (default-font-presets--index-update))
+      (unless (setq current-font (default-font-presets--index-update-on-switch))
         (setq skip-len (1+ skip-len))))
 
     (cond
@@ -260,9 +309,10 @@ When nil, 1 is used."
         (content (list))
         (font-set-index-fn
          (lambda (index)
+           (default-font-presets--switch-pre)
            (setq default-font-presets--index index)
            (condition-case _err
-               (default-font-presets--index-update)
+               (default-font-presets--index-update-on-switch)
              (error nil)))))
 
     (let ((index 0))

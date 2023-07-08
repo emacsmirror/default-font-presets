@@ -40,6 +40,9 @@ Instead, simply map keys to actions you wish to use.
    Fit the fill-column to the window width.
 ``default-font-presets-scale-reset``
    Reset the current font size.
+``default-font-presets-shared-state`` nil
+   Share the current state between all presets.
+   When nil, each preset stores it's own state (scale).
 
 Example configuration, using use-package:
 
