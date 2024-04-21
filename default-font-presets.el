@@ -88,6 +88,7 @@ Otherwise each preset remembers the last scale set."
 
 (defun default-font-presets--per-preset-state-store ()
   "Store the state of the current preset."
+  (declare (important-return-value nil))
   (when default-font-presets--index
     (let ((current-font (nth default-font-presets--index default-font-presets-list)))
       (cond
@@ -106,6 +107,7 @@ Otherwise each preset remembers the last scale set."
 
 (defun default-font-presets--per-preset-state-restore (current-font)
   "Restore the scale for CURRENT-FONT."
+  (declare (important-return-value nil))
   (when default-font-presets--scale-per-preset
     (let ((scale-delta (gethash current-font default-font-presets--scale-per-preset)))
       (when scale-delta
@@ -113,12 +115,14 @@ Otherwise each preset remembers the last scale set."
 
 (defun default-font-presets--message (&rest args)
   "Format a message with ARGS (without logging)."
+  (declare (important-return-value nil))
   (let ((message-log-max nil))
     (apply #'message (cons (concat "default-font: " (car args)) (cdr args)))))
 
 (defun default-font-presets--split (font-name)
   "Simply split FONT-NAME that might be used for XFT properties.
 For example: `A:B` is converted to (`A` `:B`)."
+  (declare (important-return-value t))
   (let ((sep (string-match-p ":" font-name)))
     (cond
      (sep
@@ -128,6 +132,7 @@ For example: `A:B` is converted to (`A` `:B`)."
 
 (defun default-font-presets--scale-by-delta (font-name scale-delta)
   "Scale font FONT-NAME by adding SCALE-DELTA."
+  (declare (important-return-value t))
   (pcase-let ((`(,head . ,tail) (default-font-presets--split font-name)))
     (let ((beg (string-match-p "\\([[:blank:]]\\|-\\)[0-9]+[0-9.]*\\'" head)))
       (when beg
@@ -161,6 +166,7 @@ For example: `A:B` is converted to (`A` `:B`)."
 
 (defun default-font-presets--font-update (current-font)
   "Update the font to CURRENT-FONT."
+  (declare (important-return-value t))
   ;; Scale the font if needed.
   (unless (zerop default-font-presets--scale-delta)
     (setq current-font
@@ -187,11 +193,13 @@ For example: `A:B` is converted to (`A` `:B`)."
 
 (defun default-font-presets--index-update ()
   "Set the current font based on the current index and scale delta."
+  (declare (important-return-value t))
   (let ((current-font (nth default-font-presets--index default-font-presets-list)))
     (default-font-presets--font-update current-font)))
 
 (defun default-font-presets--index-update-on-switch ()
   "Set the current font based on the current index and scale delta."
+  (declare (important-return-value t))
   (let ((current-font (nth default-font-presets--index default-font-presets-list)))
     (unless default-font-presets-shared-state
       (default-font-presets--per-preset-state-restore current-font))
@@ -201,6 +209,7 @@ For example: `A:B` is converted to (`A` `:B`)."
   "Add FONT-NAME list or return index if it's not already there.
 
 Argument FONT-NAME-NO-ATTRS is simply to avoid re-calculating the value."
+  (declare (important-return-value t))
   (catch 'result
     (let ((index 0))
       (dolist (font-name-iter default-font-presets-list)
@@ -220,6 +229,7 @@ when the default font is already in the list.
 
 Replacement is done so any fine tuning to the default font is kept,
 so attributes are kept (for example)."
+  (declare (important-return-value nil))
   (let ((font-index-test nil))
     (let ((current-font (default-font-presets--current-font-get)))
       (unless (string-equal current-font "")
@@ -237,11 +247,13 @@ so attributes are kept (for example)."
 
 (defun default-font-presets--ensure-once ()
   "Ensure we initialize the font list."
+  (declare (important-return-value nil))
   (unless default-font-presets--index
     (default-font-presets--init)))
 
 (defun default-font-presets--switch-pre ()
   "Run before switching away from the current font."
+  (declare (important-return-value nil))
   (unless default-font-presets-shared-state
     (default-font-presets--per-preset-state-store))
   (when default-font-presets-reset-scale-on-switch
@@ -257,6 +269,7 @@ so attributes are kept (for example)."
 
 ARG is added to the current index, a negative number cycles backwards.
 When nil, 1 is used."
+  (declare (important-return-value t))
   (interactive "p")
   (unless (display-graphic-p)
     (user-error "Cannot cycle fonts on non-graphical frame window!"))
@@ -289,18 +302,21 @@ When nil, 1 is used."
 ;;;###autoload
 (defun default-font-presets-forward ()
   "Set the next font in the list."
+  (declare (important-return-value nil))
   (interactive)
   (default-font-presets-step 1))
 
 ;;;###autoload
 (defun default-font-presets-backward ()
   "Set the previous font in the list."
+  (declare (important-return-value nil))
   (interactive)
   (default-font-presets-step -1))
 
 ;;;###autoload
 (defun default-font-presets-choose ()
   "Select a font preset from the preset list."
+  (declare (important-return-value nil))
   (interactive)
 
   (default-font-presets--ensure-once)
@@ -347,6 +363,7 @@ When nil, 1 is used."
 ;;;###autoload
 (defun default-font-presets-scale-increase ()
   "Increase the font size."
+  (declare (important-return-value nil))
   (interactive)
   (default-font-presets--ensure-once)
   (setq default-font-presets--scale-delta (1+ default-font-presets--scale-delta))
@@ -356,6 +373,7 @@ When nil, 1 is used."
 ;;;###autoload
 (defun default-font-presets-scale-decrease ()
   "Decrease the font size."
+  (declare (important-return-value nil))
   (interactive)
   (default-font-presets--ensure-once)
   (setq default-font-presets--scale-delta (1- default-font-presets--scale-delta))
@@ -365,6 +383,7 @@ When nil, 1 is used."
 ;;;###autoload
 (defun default-font-presets-scale-reset ()
   "Reset the font size."
+  (declare (important-return-value nil))
   (interactive)
   (default-font-presets--ensure-once)
   (setq default-font-presets--scale-delta 0)
@@ -374,6 +393,7 @@ When nil, 1 is used."
 ;;;###autoload
 (defun default-font-presets-scale-fit ()
   "Fit the `fill-column' to the window width."
+  (declare (important-return-value nil))
   (interactive)
   (default-font-presets--ensure-once)
   (let ((target-width (+ fill-column default-font-presets-scale-fit-margin))
