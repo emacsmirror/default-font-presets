@@ -177,7 +177,8 @@ For example: `A:B` is converted to (`A` `:B`)."
         (progn
           (default-font-presets--current-font-set current-font)
           t)
-      (error nil))
+      (error
+       nil))
 
     ;; Update the default font for new windows.
     (let ((cell (assoc 'font default-frame-alist 'eq)))
@@ -329,7 +330,8 @@ When nil, 1 is used."
            (setq default-font-presets--index index)
            (condition-case _err
                (default-font-presets--index-update-on-switch)
-             (error nil)))))
+             (error
+              nil)))))
 
     (let ((index 0))
       (dolist (font-name default-font-presets-list)
