@@ -51,6 +51,10 @@ Otherwise each preset remembers the last scale set."
   "Offset for `fill-column' indicator when fitting."
   :type 'integer)
 
+(defcustom default-font-presets-scale-fit-reset-hscroll t
+  "When resetting the scale, also reset the horizontal scroll."
+  :type 'boolean)
+
 
 ;; ---------------------------------------------------------------------------
 ;; Internal Variables
@@ -260,6 +264,54 @@ so attributes are kept (for example)."
   (when default-font-presets-reset-scale-on-switch
     (setq default-font-presets--scale-delta 0)))
 
+(defun default-font-presets--scale-fit-impl (win)
+  "Fit the `fill-column' to the window width for WIN.
+Return non-nil when the scale changed."
+  (declare (important-return-value nil))
+  (default-font-presets--ensure-once)
+  (let ((target-width (+ fill-column default-font-presets-scale-fit-margin))
+        (win-width (window-max-chars-per-line win))
+        ;; Only needed for scaling up.
+        (scale-delta-prev default-font-presets--scale-delta)
+        ;; Only needed to detect change.
+        (scale-delta-init default-font-presets--scale-delta)
+        ;; Compare with the previous final font
+        ;; (prevent any clamping from causing an infinite loop).
+        (font-prev nil)
+        (font-curr t)
+        ;; Don't redraw while resizing.
+        (inhibit-redisplay t))
+    (cond
+     ((> target-width win-width)
+      (while (and (>= target-width win-width) (not (eq font-curr font-prev)))
+        (setq default-font-presets--scale-delta (1- default-font-presets--scale-delta))
+        (setq font-prev font-curr)
+        (setq font-curr (default-font-presets--index-update))
+        (setq win-width (window-max-chars-per-line win))))
+     ((< target-width win-width)
+      (while (and (< target-width win-width) (not (eq font-curr font-prev)))
+        (setq scale-delta-prev default-font-presets--scale-delta)
+        (setq default-font-presets--scale-delta (1+ default-font-presets--scale-delta))
+        (setq font-prev font-curr)
+        (setq font-curr (default-font-presets--index-update))
+        (setq win-width (window-max-chars-per-line win)))
+      (setq default-font-presets--scale-delta scale-delta-prev)
+      (default-font-presets--index-update)))
+
+    ;; Avoids annoying situation where being zoomed in too far may have scrolled right,
+    ;; where resetting the view removes the need for scrolling
+    ;; but the horizontal scroll remains.
+    ;; When horizontal scrolling, ensure the cursor remains in the view.
+    ;; It's odd this isn't built in functionality.
+    (when default-font-presets-scale-fit-reset-hscroll
+      (let* ((column (current-column))
+             (win-width (window-max-chars-per-line win))
+             (hscroll-next (max 0 (- (+ column hscroll-margin) win-width))))
+        (unless (eq hscroll-next (window-hscroll win))
+          (set-window-hscroll win hscroll-next))))
+
+    ;; Return t when the scale changed.
+    (not (eq scale-delta-init default-font-presets--scale-delta))))
 
 ;; ---------------------------------------------------------------------------
 ;; Public Functions
@@ -394,36 +446,17 @@ When nil, 1 is used."
 
 ;;;###autoload
 (defun default-font-presets-scale-fit ()
-  "Fit the `fill-column' to the window width."
+  "Fit the `fill-column' to the window width.
+Return non-nil when the scale changed."
   (declare (important-return-value nil))
   (interactive)
-  (default-font-presets--ensure-once)
-  (let ((target-width (+ fill-column default-font-presets-scale-fit-margin))
-        (win-width (window-max-chars-per-line))
-        ;; Only needed for scaling up.
-        (scale-delta-prev default-font-presets--scale-delta)
-        ;; Compare with the previous final font
-        ;; (prevent any clamping from causing an infinite loop).
-        (font-prev nil)
-        (font-curr t)
-        ;; Don't redraw while resizing.
-        (inhibit-redisplay t))
+  (let ((win (selected-window)))
     (cond
-     ((> target-width win-width)
-      (while (and (>= target-width win-width) (not (eq font-curr font-prev)))
-        (setq default-font-presets--scale-delta (1- default-font-presets--scale-delta))
-        (setq font-prev font-curr)
-        (setq font-curr (default-font-presets--index-update))
-        (setq win-width (window-max-chars-per-line))))
-     ((< target-width win-width)
-      (while (and (< target-width win-width) (not (eq font-curr font-prev)))
-        (setq scale-delta-prev default-font-presets--scale-delta)
-        (setq default-font-presets--scale-delta (1+ default-font-presets--scale-delta))
-        (setq font-prev font-curr)
-        (setq font-curr (default-font-presets--index-update))
-        (setq win-width (window-max-chars-per-line)))
-      (setq default-font-presets--scale-delta scale-delta-prev)
-      (default-font-presets--index-update)))))
+     (win
+      (default-font-presets--scale-fit-impl win))
+     (t
+      (message "No active window")
+      nil))))
 
 ;; Evil Mode (setup if in use).
 ;;

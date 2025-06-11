@@ -94,6 +94,8 @@ Customization
    When not ``nil`` switching fonts resets any scaling.
 ``default-font-presets-scale-fit-margin`` (``1``)
    The number of additional columns to show when calling ``default-font-presets-scale-fit``.
+``default-font-presets-scale-fit-reset-hscroll`` (``t``)
+   Reset the horizontal scaling when when calling ``default-font-presets-scale-fit``.
 
 
 Details
